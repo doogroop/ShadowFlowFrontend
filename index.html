@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ShadowFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f5; --panel:#ffffff; --ink:#14213d; --muted:#5b6678; --line:#d8dee8;
+  --accent:#0f766e; --strong:#0f766e; --acc:#2a9d8f; --watch:#b7791f; --neutral:#8a94a6;
+  --warn-bg:#fff6e0; --warn-ink:#6b4a00;
+  font-family:"IBM Plex Sans",system-ui,sans-serif; color:var(--ink);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);line-height:1.45}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:26px;margin:0;letter-spacing:-.01em}
+h1 small{display:block;font-size:14px;font-weight:400;color:var(--muted);margin-top:2px}
+.right{display:flex;align-items:center;gap:10px}
+.pill{font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel)}
+.pill.live{border-color:var(--accent);color:var(--accent)}
+.pill.demo{border-color:var(--watch);color:var(--watch)}
+button{font:inherit;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:6px;padding:7px 14px}
+button:hover{background:#1f3160}
+button:focus-visible,input:focus-visible,tr:focus-visible{outline:3px solid #7cc4bb;outline-offset:2px}
+.banner{background:var(--warn-bg);color:var(--warn-ink);border-left:4px solid var(--watch);padding:10px 14px;border-radius:4px;font-size:14px;margin-bottom:14px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stat{flex:1 1 150px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 14px}
+.stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:18px}
+.stat span{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-bottom:14px}
+h2{font-size:16px;margin:0 0 10px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:500;color:var(--muted);padding:6px 6px;border-bottom:1px solid var(--line);font-size:13px}
+td{padding:9px 6px;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right;font-family:"IBM Plex Mono",monospace}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#f4f7fa}
+tbody tr.sel{background:#e4f3f1}
+.tk{font-weight:600}
+.sig{font-size:12px;padding:2px 8px;border-radius:999px;color:#fff;white-space:nowrap}
+.STRONG_ACCUMULATION{background:var(--strong)}.ACCUMULATION{background:var(--acc)}.WATCH{background:var(--watch)}.NEUTRAL{background:var(--neutral)}
+.bar{height:10px;background:#e6ebf1;border-radius:5px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.comp{display:grid;grid-template-columns:90px 1fr 44px;gap:8px;align-items:center;font-size:14px;margin:7px 0}
+.comp em{font-style:normal;font-family:"IBM Plex Mono",monospace;text-align:right}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:14px;margin:12px 0}
+.kv span{color:var(--muted)} .kv b{font-family:"IBM Plex Mono",monospace;font-weight:500;float:right}
+.cl{font-size:13px;border-top:1px solid var(--line);padding:7px 0}
+.cl b{font-family:"IBM Plex Mono",monospace;font-weight:500}
+.slider{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+input[type=range]{flex:1 1 220px;accent-color:var(--accent)}
+.alloc{display:grid;grid-template-columns:70px 1fr 54px;gap:8px;align-items:center;margin:6px 0;font-size:14px}
+.alloc em{font-style:normal;font-family:"IBM Plex Mono",monospace;text-align:right}
+.note{font-size:13px;color:var(--muted)}
+.err{color:#9b1c1c}
+
+.phead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.phead h2{margin:0}
+button.ghost,button.ghost:hover{background:var(--panel);color:var(--ink);border-color:var(--line)}
+button.ghost:hover{border-color:var(--ink)}
+button:disabled{opacity:.5;cursor:default}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+button.tab,button.tab:hover{flex:1 1 180px;text-align:left;background:var(--panel);color:var(--ink);border:1px solid var(--line);padding:9px 12px}
+button.tab:hover{border-color:var(--ink)}
+button.tab.on{border-color:var(--accent);background:#e4f3f1;box-shadow:inset 0 0 0 1px var(--accent)}
+.tab span{display:block;font-size:12px;color:var(--muted);margin-top:2px}
+.asset{border-top:1px solid var(--line);padding:10px 0 4px}
+.asset p{margin:6px 0 4px;font-size:14px}
+.ahead{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ahead em{margin-left:auto;font-style:normal;font-family:"IBM Plex Mono",monospace}
+.sent{font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid}
+.s-Accumulation{color:var(--accent);border-color:var(--accent)}
+.s-Distribution{color:var(--watch);border-color:var(--watch)}
+.issues{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+@media(prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ShadowFlow<small>Risk-aware portfolio builder with off-exchange order-flow signals</small></h1>
+    <div class="right">
+      <span id="status" class="pill">Connecting…</span>
+      <button id="refresh">Refresh data</button>
+    </div>
+  </header>
+
+  <div class="banner" id="banner">Loading data source details…</div>
+  <div class="stats" id="stats"></div>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Ranked stocks</h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>#</th><th>Ticker</th><th>Signal</th><th class="n">Conviction</th><th class="n">Sharpe</th><th class="n">Volatility</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <p class="note" id="excluded"></p>
+    </section>
+
+    <section class="panel" id="detail" aria-live="polite"></section>
+  </div>
+
+  <section class="panel">
+    <div class="phead">
+      <h2>Portfolios built by Gemini</h2>
+      <button id="regen" class="ghost">Regenerate</button>
+    </div>
+    <div class="tabs" role="tablist" id="tabs" aria-label="Risk level"></div>
+    <div id="tierBody" aria-live="polite"></div>
+    <p class="note" id="pnote"></p>
+  </section>
+</div>
+
+<script>
+// ---- Config: change this if your backend runs somewhere else ----
+const API_URL = "http://localhost:8000/api/shadow-flow-metrics";
+const PORTFOLIO_URL = "http://localhost:8000/api/optimize-portfolios";
+
+let data = null, selected = null, live = false;
+let pf = null, pfState = "idle", pfError = null;
+// Ordered from lowest to highest risk
+const TIERS = [
+  ["defensive_liquidity_shelter", "Defensive", "Lower volatility, steady liquidity"],
+  ["balanced_dark_flow", "Balanced", "Accumulation strength with moderate risk"],
+  ["high_conviction_whale_growth", "High conviction", "Strongest recent accumulation, higher risk"]
+];
+let tier = TIERS[1][0];
+const $ = id => document.getElementById(id);
+const pct = (x, d = 1) => x == null ? "n/a" : (x * 100).toFixed(d) + "%";
+const num = (x, d = 2) => x == null ? "n/a" : Number(x).toFixed(d);
+const esc = x => String(x ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const label = s => s.replace("_", " ").toLowerCase().replace(/^./, c => c.toUpperCase());
+
+// Sample data in the same shape as the backend, so you can build the UI without the server
+function demoData() {
+  const mk = (rank, ticker, signal, conv, whale, sharpe, vol, ret) => ({
+    rank, ticker, signal, conviction_score: conv, whale_accumulation_cluster_score: whale,
+    score_components: { density: .6, intensity: .45, persistence: .8, recency: .5 },
+    last_close: 100 + rank * 17, total_return: ret, cagr: ret, annualized_volatility: vol,
+    sharpe_ratio: sharpe, observations: 251,
+    dark_pool: { avg_off_exchange_share: .38, anomalous_days: 9, cluster_count: 3, longest_cluster_days: 4,
+      last_anomaly_date: "2026-10-21", sessions_since_last_anomaly: 12, accumulation_floor_price: 98.4,
+      recent_clusters: [{ start_date: "2026-10-16", end_date: "2026-10-21", anomalous_days: 4,
+        avg_off_exchange_share: .58, accumulation_price: 98.4, off_exchange_volume: 12400000 }] }
+  });
+  return {
+    generated_at: new Date().toISOString(), as_of: "2026-11-06", lookback: "1y", universe_size: 15, analyzed: 5,
+    risk_free_rate: .045, off_exchange_threshold: .45,
+    data_provenance: { prices_and_volume: "Demo data", off_exchange_tape: "SYNTHETIC - demo sample; not real dark pool data, not a trading signal" },
+    targets: [
+      mk(1, "JNJ", "STRONG_ACCUMULATION", 78.2, 82, 1.9, .16, .21),
+      mk(2, "COST", "ACCUMULATION", 66.5, 64, 1.4, .22, .27),
+      mk(3, "MSFT", "ACCUMULATION", 61.0, 58, 1.1, .25, .24),
+      mk(4, "NVDA", "WATCH", 48.3, 35, 1.6, .52, .88),
+      mk(5, "TSLA", "NEUTRAL", 21.7, 10, .2, .62, .09)
+    ],
+    excluded: []
+  };
+}
+
+function demoPortfolios() {
+  const a = (ticker, w, sent, floor, why) => ({ ticker, allocation_weight_pct: w, institutional_sentiment: sent, accumulation_price_floor: floor, order_flow_rationale: why });
+  return {
+    model: "demo", attempts: 1, metrics_as_of: "2026-11-06",
+    data_provenance: { portfolio_construction: "Demo sample. Start the backend to see Gemini's real portfolios." },
+    portfolios: {
+      defensive_liquidity_shelter: { assets: [
+        a("JNJ", 55, "Accumulation", 98.4, "Sample text: low volatility and a recent cluster of off-exchange buying near the floor."),
+        a("COST", 45, "Accumulation", 117.2, "Sample text: steady off-exchange share with a positive Sharpe ratio.")] },
+      balanced_dark_flow: { assets: [
+        a("MSFT", 40, "Accumulation", 134.0, "Sample text: moderate volatility with a strong, recent accumulation cluster."),
+        a("JNJ", 35, "Accumulation", 98.4, "Sample text: high conviction score with calm price swings."),
+        a("NVDA", 25, "Distribution", 151.6, "Sample text: strong return but the latest off-exchange activity is fading.")] },
+      high_conviction_whale_growth: { assets: [
+        a("NVDA", 60, "Accumulation", 151.6, "Sample text: long accumulation clusters and the highest whale score in the group."),
+        a("MSFT", 40, "Accumulation", 134.0, "Sample text: persistent clusters with a recent print at the floor.")] }
+    }
+  };
+}
+
+async function loadPortfolios(refresh = false) {
+  pfState = "loading"; renderPortfolio();
+  if (!live) { pf = demoPortfolios(); pfState = "ready"; renderPortfolio(); return; }
+  try {
+    const res = await fetch(PORTFOLIO_URL + (refresh ? "?refresh=true" : ""));
+    const body = await res.json().catch(() => null);
+    if (!res.ok) {
+      const d = body?.detail;
+      pfError = { message: typeof d === "string" ? d : (d?.message ?? "Server answered " + res.status), issues: d?.issues ?? [] };
+      pfState = "error";
+    } else { pf = body; pfState = "ready"; }
+  } catch (e) {
+    pfError = { message: "Could not reach the backend.", issues: [] };
+    pfState = "error";
+  }
+  renderPortfolio();
+}
+
+async function load(refresh = false) {
+  $("status").className = "pill"; $("status").textContent = "Loading…";
+  try {
+    const res = await fetch(API_URL + (refresh ? "?refresh=true" : ""));
+    if (!res.ok) throw new Error("Server answered " + res.status);
+    data = await res.json(); live = true;
+    $("status").className = "pill live"; $("status").textContent = "Live backend";
+  } catch (e) {
+    console.warn(e);
+    data = demoData(); live = false;
+    $("status").className = "pill demo"; $("status").textContent = "Demo data (backend not reachable)";
+  }
+  selected = data.targets[0]?.ticker ?? null;
+  render();
+  loadPortfolios(refresh);
+}
+
+function render() {
+  const p = data.data_provenance;
+  $("banner").textContent = "Prices: " + p.prices_and_volume + ". Off-exchange activity: " + p.off_exchange_tape + ". Educational project, not financial advice.";
+  $("stats").innerHTML = [
+    [data.analyzed + " / " + data.universe_size, "stocks analyzed"],
+    [data.as_of ?? "n/a", "latest trading day"],
+    [data.lookback, "history window"],
+    [pct(data.risk_free_rate), "risk-free rate"],
+    [pct(data.off_exchange_threshold, 0), "off-exchange spike threshold"]
+  ].map(([v, l]) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`).join("");
+
+  $("rows").innerHTML = data.targets.map(t => `
+    <tr tabindex="0" data-t="${t.ticker}" class="${t.ticker === selected ? "sel" : ""}">
+      <td>${t.rank}</td><td class="tk">${t.ticker}</td>
+      <td><span class="sig ${t.signal}">${label(t.signal)}</span></td>
+      <td class="n">${num(t.conviction_score, 1)}</td><td class="n">${num(t.sharpe_ratio)}</td>
+      <td class="n">${pct(t.annualized_volatility)}</td></tr>`).join("");
+  document.querySelectorAll("#rows tr").forEach(tr => {
+    const pick = () => { selected = tr.dataset.t; render(); };
+    tr.onclick = pick; tr.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } };
+  });
+  $("excluded").textContent = data.excluded.length
+    ? "Skipped: " + data.excluded.map(x => x.ticker + " (" + x.reason + ")").join(", ") : "";
+
+  renderDetail(); renderPortfolio();
+}
+
+function renderDetail() {
+  const t = data.targets.find(x => x.ticker === selected);
+  if (!t) { $("detail").innerHTML = "<h2>No stock selected</h2><p class='note'>Pick a row to see its details.</p>"; return; }
+  const c = t.score_components, d = t.dark_pool;
+  const comp = (name, v) => `<div class="comp"><span>${name}</span><div class="bar"><i style="width:${v * 100}%"></i></div><em>${Math.round(v * 100)}</em></div>`;
+  $("detail").innerHTML = `
+    <h2>${t.ticker} <span class="sig ${t.signal}">${label(t.signal)}</span></h2>
+    <p class="note">Whale accumulation score: <b>${num(t.whale_accumulation_cluster_score, 1)}</b> / 100. It combines the four parts below.</p>
+    ${comp("Density", c.density)}${comp("Intensity", c.intensity)}${comp("Persistence", c.persistence)}${comp("Recency", c.recency)}
+    <div class="kv">
+      <div><span>Last close</span><b>$${num(t.last_close)}</b></div>
+      <div><span>1-year return</span><b>${pct(t.total_return)}</b></div>
+      <div><span>Sharpe ratio</span><b>${num(t.sharpe_ratio)}</b></div>
+      <div><span>Volatility</span><b>${pct(t.annualized_volatility)}</b></div>
+      <div><span>Flagged days</span><b>${d.anomalous_days}</b></div>
+      <div><span>Avg off-exchange</span><b>${pct(d.avg_off_exchange_share, 0)}</b></div>
+    </div>
+    <h2 style="font-size:14px">Recent accumulation clusters</h2>
+    ${d.recent_clusters.length ? d.recent_clusters.map(k => `
+      <div class="cl"><b>${k.start_date}</b> to <b>${k.end_date}</b>: ${k.anomalous_days} days, ${pct(k.avg_off_exchange_share, 0)} off-exchange, near $${num(k.accumulation_price)}</div>`).join("")
+      : "<p class='note'>No clusters found for this stock.</p>"}`;
+}
+
+function renderPortfolio() {
+  $("tabs").innerHTML = TIERS.map(([k, name, desc]) =>
+    `<button role="tab" class="tab ${k === tier ? "on" : ""}" aria-selected="${k === tier}" data-k="${k}"><b>${name}</b><span>${desc}</span></button>`).join("");
+  document.querySelectorAll("#tabs .tab").forEach(b => b.onclick = () => { tier = b.dataset.k; renderPortfolio(); });
+  $("regen").disabled = pfState === "loading";
+  const body = $("tierBody"), note = $("pnote");
+
+  if (pfState === "loading") {
+    body.innerHTML = '<p class="note">Gemini is building your portfolios. This can take up to a minute.</p>';
+    note.textContent = ""; return;
+  }
+  if (pfState === "error") {
+    const hint = /GEMINI_API_KEY/.test(pfError.message) ? " Set the key in the terminal that runs the backend, then restart it." : "";
+    body.innerHTML = `<p class="err">${esc(pfError.message)}${hint}</p>` +
+      (pfError.issues.length ? `<ul class="issues">${pfError.issues.map(i => `<li>${esc(i)}</li>`).join("")}</ul>` : "") +
+      '<p class="note">Press Regenerate to try again.</p>';
+    note.textContent = ""; return;
+  }
+  if (!pf) return;
+  const assets = [...pf.portfolios[tier].assets].sort((a, b) => b.allocation_weight_pct - a.allocation_weight_pct);
+  body.innerHTML = assets.map(a => `
+    <div class="asset">
+      <div class="ahead"><b>${esc(a.ticker)}</b><span class="sent s-${esc(a.institutional_sentiment)}">${esc(a.institutional_sentiment)}</span><em>${num(a.allocation_weight_pct)}%</em></div>
+      <div class="bar"><i style="width:${Math.min(100, a.allocation_weight_pct)}%"></i></div>
+      <div class="note">Accumulation floor: $${num(a.accumulation_price_floor)}</div>
+      <p>${esc(a.order_flow_rationale)}</p>
+    </div>`).join("");
+  note.textContent = pf.data_provenance.portfolio_construction + " Model: " + pf.model + ".";
+}
+
+$("regen").onclick = () => loadPortfolios(true);
+$("refresh").onclick = () => load(true);
+load();
+</script>
+</body>
+</html>
