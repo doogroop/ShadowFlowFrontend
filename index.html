@@ -122,8 +122,13 @@ button.tab.on{border-color:var(--accent);background:#e4f3f1;box-shadow:inset 0 0
 
 <script>
 // ---- Config: change this if your backend runs somewhere else ----
-const API_URL = "http://localhost:8000/api/shadow-flow-metrics";
-const PORTFOLIO_URL = "http://localhost:8000/api/optimize-portfolios";
+//const API_URL = "http://localhost:8000/api/shadow-flow-metrics";
+//const PORTFOLIO_URL = "http://localhost:8000/api/optimize-portfolios";
+
+const IS_LOCAL = ["localhost", "127.0.0.1", ""].includes(location.hostname);
+const API_BASE = IS_LOCAL ? "http://localhost:8000" : "https://shadowflow-h28x.onrender.com";
+const API_URL = API_BASE + "/api/shadow-flow-metrics";
+const PORTFOLIO_URL = API_BASE + "/api/optimize-portfolios";
 
 let data = null, selected = null, live = false;
 let pf = null, pfState = "idle", pfError = null;
